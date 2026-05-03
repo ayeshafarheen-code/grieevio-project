@@ -72,13 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Auto-redirect if already logged in
-    (async () => {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) checkUserRoleAndRedirect();
-        } catch (e) { /* ignore */ }
-    })();
+    // Auto-redirect removed as per user request (Don't remember device/Direct login only)
 });
 
 async function checkUserRoleAndRedirect() {

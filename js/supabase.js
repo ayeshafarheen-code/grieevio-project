@@ -2,10 +2,15 @@
 const SUPABASE_URL = 'https://vpdnmejmtedogsurjxrp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Zt_rd9RDVOhHFaJTZyoadw_W0f9TcWd';
 
-// Initialize Supabase — the CDN exposes `supabase` as a global namespace object
-// with a createClient method, so we call it, then reassign to `window.supabase`
-let _supabaseLib = window.supabase; // save ref to the library
-window.supabase = _supabaseLib.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Initialize Supabase
+let _supabaseLib = window.supabase;
+window.supabase = _supabaseLib.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: {
+        persistSession: true,
+        storage: window.sessionStorage, // Only keep login for the current session (tab), don't remember the device.
+        autoRefreshToken: true
+    }
+});
 
 // --- Toast ---
 function showToast(message, isError = false) {
