@@ -123,8 +123,7 @@ window.selectMode = function(mode) {
         document.getElementById('voiceAnalysisResult').style.display = 'block';
         voiceTranscript = '';
         persistentTranscript = '';
-        document.getElementById('transcriptBox').textContent = 'Your speech will appear here in real time...';
-        document.getElementById('transcriptBox').classList.add('empty');
+        document.getElementById('transcriptBox').value = '';
         if (!mapVoice) {
             setTimeout(() => {
                 initMap('mapVoice',
@@ -397,7 +396,9 @@ function setupVoiceRecorder() {
 
     function startRecording() {
         if (!isRecording && !recognition) {
-            persistentTranscript = voiceTranscript; // Preserve text if manual resume
+            // Read from the UI because they might have edited it manually!
+            voiceTranscript = document.getElementById('transcriptBox').value.trim();
+            persistentTranscript = voiceTranscript;
         }
 
         recognition = new SpeechRecognition();
@@ -414,7 +415,6 @@ function setupVoiceRecorder() {
             pulse.classList.add('recording');
             waveform.classList.add('active');
             statusEl.textContent = '🔴 Recording... speak now';
-            transcriptEl.classList.remove('empty');
             // We don't clear voiceTranscript here so it survives auto-restarts
         };
 
@@ -430,8 +430,8 @@ function setupVoiceRecorder() {
                 }
             }
             // Overwrite using persistent text + current session final text
-            voiceTranscript = persistentTranscript + ' ' + currentFinal;
-            transcriptEl.textContent = voiceTranscript + (interim ? ' ' + interim + '...' : '');
+            voiceTranscript = persistentTranscript + (persistentTranscript && currentFinal ? ' ' : '') + currentFinal;
+            transcriptEl.value = voiceTranscript + (interim ? ' ' + interim + '...' : '');
         };
 
         recognition.onerror = (e) => {
@@ -548,6 +548,9 @@ async function submitVoiceComplaint() {
     const cat = document.getElementById('vCategory').value;
     const pri = document.getElementById('vPriority').value;
 
+    // Capture final manual edits
+    voiceTranscript = document.getElementById('transcriptBox').value.trim();
+
     if (!loc) { showToast('Please pin a location on the map', true); return; }
     if (!voiceTranscript) { showToast('No voice transcript found', true); return; }
 
@@ -575,8 +578,7 @@ async function submitVoiceComplaint() {
         showToast('✅ Voice complaint submitted!');
         voiceTranscript = '';
         persistentTranscript = '';
-        document.getElementById('transcriptBox').textContent = 'Your speech will appear here...';
-        document.getElementById('transcriptBox').classList.add('empty');
+        document.getElementById('transcriptBox').value = '';
         selectMode(null);
     } catch (err) { showToast(err.message, true); }
     finally { btn.disabled = false; }
