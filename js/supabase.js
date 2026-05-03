@@ -52,7 +52,26 @@ async function getCurrentUser() {
             user = byEmail || null;
         }
 
-        if (!user) return null;
+        // If user record is missing, AUTO-CREATE it (Self-healing)
+        if (!user) {
+            console.log('User profile missing. Auto-creating for:', sessionEmail);
+            const { data: newUser, error: insertError } = await supabase
+                .from('users')
+                .insert([{
+                    auth_id: session.user.id,
+                    email: sessionEmail,
+                    name: session.user.user_metadata?.full_name || 'GRIEEVIO User',
+                    role: sessionEmail === ADMIN_EMAIL ? 'Admin' : 'Citizen'
+                }])
+                .select()
+                .single();
+            
+            if (insertError) {
+                console.error('Auto-create failed:', insertError);
+                return null;
+            }
+            return newUser;
+        }
 
         // Enforce: admin@grieevio.com MUST have Admin role
         const correctRole = sessionEmail === ADMIN_EMAIL ? 'Admin' : 'Citizen';
