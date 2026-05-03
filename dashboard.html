@@ -210,7 +210,8 @@
                     <label class="field-label">Choose Your Language</label>
                     <div class="lang-selector" id="langPills">
                         <!-- International -->
-                        <div class="lang-pill active" data-lang="en-US">🇬🇧 English</div>
+                        <div class="lang-pill active" data-lang="">🌐 Auto-Detect</div>
+                        <div class="lang-pill" data-lang="en-US">🇬🇧 English</div>
                         <div class="lang-pill" data-lang="es-ES">🇪🇸 Spanish</div>
                         <div class="lang-pill" data-lang="fr-FR">🇫🇷 French</div>
                         <div class="lang-pill" data-lang="ar-SA">🇸🇦 Arabic</div>
@@ -251,8 +252,8 @@
                         <div class="transcript-box empty" id="transcriptBox">Your speech will appear here in real time...</div>
                     </div>
 
-                    <!-- ═══ AI RESULT + FULL FEATURES (shown after recording) ═══ -->
-                    <div id="voiceAnalysisResult" style="display:none;" class="fade-in">
+                    <!-- ═══ AI RESULT + FULL FEATURES ═══ -->
+                    <div id="voiceAnalysisResult" style="display:block;" class="fade-in">
 
                         <!-- AI Summary Panel -->
                         <div style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.2); border-radius:16px; padding:24px; margin-bottom:28px;">
@@ -269,7 +270,7 @@
 
                         <!-- Category Override -->
                         <div class="field-group">
-                            <label class="field-label">Override Category</label>
+                            <label class="field-label">Category</label>
                             <div class="category-tags" id="vCategoryTags">
                                 <div class="category-tag active" data-value="Roads">🚧 Roads</div>
                                 <div class="category-tag" data-value="Water">💧 Water</div>
@@ -283,7 +284,7 @@
 
                         <!-- Priority Override -->
                         <div class="field-group">
-                            <label class="field-label">Override Priority</label>
+                            <label class="field-label">Priority</label>
                             <div class="priority-tags" id="vPriorityTags">
                                 <div class="priority-tag critical" data-value="Critical">🔴 Critical</div>
                                 <div class="priority-tag high" data-value="High">🟠 High</div>

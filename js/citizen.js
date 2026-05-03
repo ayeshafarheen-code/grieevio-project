@@ -5,8 +5,9 @@ let currentUser = null;
 let map = null, mapVoice = null;
 let mapMarker = null, mapVoiceMarker = null;
 let cameraStream = null, vCameraStream = null;
-let selectedLang = 'en-US';
+let selectedLang = '';
 let voiceTranscript = '';
+let persistentTranscript = '';
 let recognition = null;
 let isRecording = false;
 let currentGeoCoords = null;   // text form coords
@@ -119,10 +120,25 @@ window.selectMode = function(mode) {
     );
 
     if (mode === 'voice') {
-        document.getElementById('voiceAnalysisResult').style.display = 'none';
+        document.getElementById('voiceAnalysisResult').style.display = 'block';
         voiceTranscript = '';
+        persistentTranscript = '';
         document.getElementById('transcriptBox').textContent = 'Your speech will appear here in real time...';
         document.getElementById('transcriptBox').classList.add('empty');
+        if (!mapVoice) {
+            setTimeout(() => {
+                initMap('mapVoice',
+                    (lat, lng) => {
+                        document.getElementById('voiceLocation').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                        showGeoBadge('vGeoBadge', 'vGeoText', lat, lng);
+                        vCurrentGeoCoords = { lat, lng };
+                    },
+                    (m) => { mapVoiceMarker = m; }, () => mapVoiceMarker
+                );
+            }, 100);
+        } else {
+            setTimeout(() => mapVoice.invalidateSize(), 100);
+        }
     }
 
     if (mode !== 'text') { stopCamera(); }
@@ -380,8 +396,14 @@ function setupVoiceRecorder() {
     });
 
     function startRecording() {
+        if (!isRecording && !recognition) {
+            persistentTranscript = voiceTranscript; // Preserve text if manual resume
+        }
+
         recognition = new SpeechRecognition();
-        recognition.lang = selectedLang;
+        if (selectedLang) {
+            recognition.lang = selectedLang;
+        }
         recognition.interimResults = true;
         recognition.continuous = true;
 
@@ -393,27 +415,38 @@ function setupVoiceRecorder() {
             waveform.classList.add('active');
             statusEl.textContent = '🔴 Recording... speak now';
             transcriptEl.classList.remove('empty');
-            voiceTranscript = '';
+            // We don't clear voiceTranscript here so it survives auto-restarts
         };
 
         recognition.onresult = (e) => {
-            let interim = '', final = '';
-            for (let i = e.resultIndex; i < e.results.length; i++) {
+            let interim = '';
+            let currentFinal = '';
+            for (let i = 0; i < e.results.length; i++) {
                 const t = e.results[i][0].transcript;
-                if (e.results[i].isFinal) final += t;
-                else interim += t;
+                if (e.results[i].isFinal) {
+                    currentFinal += t + ' ';
+                } else {
+                    interim += t;
+                }
             }
-            voiceTranscript += final;
+            // Overwrite using persistent text + current session final text
+            voiceTranscript = persistentTranscript + ' ' + currentFinal;
             transcriptEl.textContent = voiceTranscript + (interim ? ' ' + interim + '...' : '');
         };
 
         recognition.onerror = (e) => {
-            showToast('Mic error: ' + e.error, true);
-            stopRecording();
+            if (e.error !== 'no-speech') {
+                showToast('Mic error: ' + e.error, true);
+                stopRecording();
+            }
         };
 
         recognition.onend = () => {
-            if (isRecording) recognition.start(); // keep alive
+            if (isRecording) {
+                // Keep alive on pause
+                persistentTranscript = voiceTranscript;
+                recognition.start(); 
+            }
         };
 
         recognition.start();
@@ -427,6 +460,7 @@ function setupVoiceRecorder() {
         pulse.classList.remove('recording');
         waveform.classList.remove('active');
         statusEl.textContent = 'Tap to start recording';
+        persistentTranscript = voiceTranscript;
 
         if (voiceTranscript.trim()) processVoiceTranscript(voiceTranscript);
         else showToast('No speech detected, try again.', true);
@@ -448,24 +482,7 @@ function processVoiceTranscript(text) {
     document.querySelectorAll('#vPriorityTags .priority-tag').forEach(t => t.classList.toggle('active', t.dataset.value === ai.priority));
     document.getElementById('vPriority').value = ai.priority;
 
-    document.getElementById('voiceAnalysisResult').style.display = 'block';
     showToast('✅ Voice processed! Review details below.');
-
-    // Init voice map if not done yet
-    if (!mapVoice) {
-        setTimeout(() => {
-            initMap('mapVoice',
-                (lat, lng) => {
-                    document.getElementById('voiceLocation').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-                    showGeoBadge('vGeoBadge', 'vGeoText', lat, lng);
-                    vCurrentGeoCoords = { lat, lng };
-                },
-                (m) => { mapVoiceMarker = m; }, () => mapVoiceMarker
-            );
-        }, 100);
-    } else {
-        mapVoice.invalidateSize();
-    }
     lucide.createIcons();
 }
 
@@ -557,9 +574,9 @@ async function submitVoiceComplaint() {
         await addPoints(15);
         showToast('✅ Voice complaint submitted!');
         voiceTranscript = '';
+        persistentTranscript = '';
         document.getElementById('transcriptBox').textContent = 'Your speech will appear here...';
         document.getElementById('transcriptBox').classList.add('empty');
-        document.getElementById('voiceAnalysisResult').style.display = 'none';
         selectMode(null);
     } catch (err) { showToast(err.message, true); }
     finally { btn.disabled = false; }
