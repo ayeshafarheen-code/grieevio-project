@@ -70,14 +70,31 @@ function setupNav() {
 function switchView(active, views) {
     Object.keys(views).forEach(k => {
         document.getElementById(views[k]).style.display = 'none';
-        document.getElementById('nav' + k.charAt(0).toUpperCase() + k.slice(1)).classList.remove('active');
+        const sideLink = document.getElementById('nav' + k.charAt(0).toUpperCase() + k.slice(1));
+        if (sideLink) sideLink.classList.remove('active');
     });
+    
     document.getElementById(views[active]).style.display = 'block';
-    document.getElementById('nav' + active.charAt(0).toUpperCase() + active.slice(1)).classList.add('active');
+    const activeSideLink = document.getElementById('nav' + active.charAt(0).toUpperCase() + active.slice(1));
+    if (activeSideLink) activeSideLink.classList.add('active');
+
+    // Update Mobile Nav Active State
+    const mobileLinks = document.querySelectorAll('.mobile-nav a');
+    mobileLinks.forEach(link => {
+        link.classList.remove('active');
+        const text = link.textContent.toLowerCase();
+        if ((active === 'home' && text.includes('home')) ||
+            (active === 'new' && text.includes('report')) ||
+            (active === 'history' && text.includes('history')) ||
+            (active === 'notify' && text.includes('inbox'))) {
+            link.classList.add('active');
+        }
+    });
 
     if (active === 'history') loadComplaints();
     if (active === 'notify') { unreadNotifications = 0; updateNotifyBadge(); loadNotifications(); }
     if (active !== 'new') { stopCamera(); }
+    lucide.createIcons();
 }
 
 function updateNotifyBadge() {

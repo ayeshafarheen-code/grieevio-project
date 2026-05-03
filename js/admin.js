@@ -42,6 +42,16 @@ function setupNav() {
             });
             document.getElementById(views[key]).style.display = 'block';
             document.getElementById('nav' + key).classList.add('active');
+
+            // Update Mobile Nav Active State
+            const mobileLinks = document.querySelectorAll('.mobile-nav a');
+            mobileLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.textContent.toLowerCase().includes(key === 'Overview' ? 'overview' : key === 'Complaints' ? 'cases' : key === 'Analytics' ? 'stats' : 'gear')) {
+                    link.classList.add('active');
+                }
+            });
+
             if (key === 'Overview') loadOverview();
             if (key === 'Complaints') loadAllComplaints();
             if (key === 'Analytics') loadAnalytics();

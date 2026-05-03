@@ -358,6 +358,22 @@
         </section>
 
     </main>
+
+    <!-- 📱 MOBILE BOTTOM NAV -->
+    <nav class="mobile-nav">
+        <a href="#" class="active" onclick="switchView('home', { home: 'viewDashboard', new: 'viewNew', history: 'viewHistory', notify: 'viewNotify' })">
+            <i data-lucide="home"></i> Home
+        </a>
+        <a href="#" onclick="switchView('new', { home: 'viewDashboard', new: 'viewNew', history: 'viewHistory', notify: 'viewNotify' })">
+            <i data-lucide="plus-circle"></i> Report
+        </a>
+        <a href="#" onclick="switchView('history', { home: 'viewDashboard', new: 'viewNew', history: 'viewHistory', notify: 'viewNotify' })">
+            <i data-lucide="history"></i> History
+        </a>
+        <a href="#" onclick="switchView('notify', { home: 'viewDashboard', new: 'viewNew', history: 'viewHistory', notify: 'viewNotify' })">
+            <i data-lucide="bell"></i> Inbox
+        </a>
+    </nav>
 </div>
 
 <div id="toast"></div>
