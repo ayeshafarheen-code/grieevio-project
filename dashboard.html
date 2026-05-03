@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Dashboard - GRIEEVIO</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+<div class="app-container">
+
+    <!-- ═══════════════ SIDEBAR ═══════════════ -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-logo">GRIEEVIO</div>
+            <div class="sidebar-tag">Citizen Portal</div>
+            <nav>
+                <a href="#" class="nav-link active" id="navHome"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+                <a href="#" class="nav-link" id="navNew"><i data-lucide="plus-circle"></i> Report Issue</a>
+                <a href="#" class="nav-link" id="navHistory"><i data-lucide="list"></i> My Complaints</a>
+                <a href="#" class="nav-link" id="navNotify"><i data-lucide="bell"></i> Notifications
+                    <span id="notifyBadge" class="badge" style="display:none; background:var(--red); margin-left:auto; border:none;">0</span>
+                </a>
+            </nav>
+        </div>
+        <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; padding:12px 16px; background:rgba(255,255,255,0.04); border-radius:12px; border:1px solid var(--glass-border);">
+                <select id="langSwitch" style="background:transparent; border:none; color:var(--text-dim); font-size:0.8rem; flex:1; margin:0; padding:0;">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="hi">🇮🇳 Hindi</option>
+                    <option value="es">🇪🇸 Spanish</option>
+                    <option value="fr">🇫🇷 French</option>
+                    <option value="ar">🇸🇦 Arabic</option>
+                    <option value="ta">🇮🇳 Tamil</option>
+                    <option value="ur">🇵🇰 Urdu</option>
+                </select>
+            </div>
+            <button id="logoutBtn" class="btn-secondary" style="width:100%; border-color:rgba(239,68,68,0.2); color:#f87171;">
+                <i data-lucide="log-out"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- ═══════════════ MAIN ═══════════════ -->
+    <main class="main-view">
+
+        <!-- ────── VIEW: DASHBOARD ────── -->
+        <section id="viewDashboard" class="fade-in">
+            <!-- Header (Dashboard only) -->
+            <header style="margin-bottom:40px; display:flex; justify-content:space-between; align-items:flex-end;">
+                <div>
+                    <h1 id="welcomeText" style="font-size:2.2rem; font-weight:800; margin-bottom:8px;">Welcome back!</h1>
+                    <p style="color:var(--text-dim);">Empowering your community, one report at a time.</p>
+                </div>
+                <div class="glass" style="padding:14px 22px; display:flex; align-items:center; gap:14px; border-color:var(--secondary);">
+                    <div style="background:rgba(168,85,247,0.12); padding:10px; border-radius:12px;">
+                        <i data-lucide="award" style="color:var(--secondary);"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700; letter-spacing:1px;">Rank</div>
+                        <div id="rankTitle" style="font-weight:800; font-size:1rem;">Active Citizen</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-box glass">
+                    <span class="label">My Reports</span>
+                    <span class="number" id="totalReports">0</span>
+                </div>
+                <div class="stat-box glass" style="border-top:3px solid var(--green);">
+                    <span class="label">Resolved</span>
+                    <span class="number" id="resolvedReports" style="background:linear-gradient(to right,var(--green),#86efac); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">0</span>
+                </div>
+                <div class="stat-box glass" style="border-top:3px solid var(--primary);">
+                    <span class="label">Points Earned</span>
+                    <span class="number" id="userPoints" style="background:linear-gradient(to right,var(--primary),var(--secondary)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">0</span>
+                </div>
+            </div>
+            <div class="glass" style="padding:28px;">
+                <h3 style="font-weight:800; margin-bottom:20px;">Your Badges</h3>
+                <div style="display:flex; gap:12px; flex-wrap:wrap;" id="badgesContainer">
+                    <div class="badge" style="background:rgba(99,102,241,0.1); color:var(--primary); border:1px solid rgba(99,102,241,0.2); font-size:0.85rem; padding:8px 18px;">✨ First Responder</div>
+                    <div class="badge" style="background:rgba(168,85,247,0.1); color:var(--secondary); border:1px solid rgba(168,85,247,0.2); font-size:0.85rem; padding:8px 18px;">🛡️ Community Guard</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ────── VIEW: REPORT ISSUE ────── -->
+        <section id="viewNew" style="display:none;" class="fade-in">
+            <h2 style="font-size:2rem; font-weight:800; margin-bottom:8px;">File a Complaint</h2>
+            <p style="color:var(--text-dim); margin-bottom:32px;">Choose how you want to report this issue.</p>
+
+            <!-- Step 0: Mode Selector -->
+            <div class="mode-cards" id="modeSelector">
+                <div class="mode-card glass" id="modeText" onclick="selectMode('text')">
+                    <span class="mode-icon">📝</span>
+                    <div class="mode-title">Text Report</div>
+                    <div class="mode-desc">Type your complaint with full details, location, and photos.</div>
+                </div>
+                <div class="mode-card glass" id="modeVoice" onclick="selectMode('voice')">
+                    <span class="mode-icon">🎤</span>
+                    <div class="mode-title">Voice Report</div>
+                    <div class="mode-desc">Speak your complaint in your preferred language. AI will process it for you.</div>
+                </div>
+            </div>
+
+            <!-- ── TEXT REPORT FORM ── -->
+            <div id="textReportForm" style="display:none; max-width:780px;" class="fade-in">
+                <button onclick="selectMode(null)" class="btn-secondary" style="margin-bottom:24px; font-size:0.8rem; padding:8px 16px;">← Back to Options</button>
+
+                <div class="glass" style="padding:40px;">
+                    <form id="complaintForm">
+
+                        <div class="field-group">
+                            <label class="field-label">Issue Title</label>
+                            <input type="text" id="cTitle" placeholder="e.g., Large pothole on MG Road near Signal #4" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Category</label>
+                            <div class="category-tags" id="categoryTags">
+                                <div class="category-tag active" data-value="Roads">🚧 Roads</div>
+                                <div class="category-tag" data-value="Water">💧 Water</div>
+                                <div class="category-tag" data-value="Garbage">🗑️ Garbage</div>
+                                <div class="category-tag" data-value="Electricity">💡 Electricity</div>
+                                <div class="category-tag" data-value="Safety">🚨 Safety</div>
+                                <div class="category-tag" data-value="Other">❓ Other</div>
+                            </div>
+                            <input type="hidden" id="cCategory" value="Roads">
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Priority Level</label>
+                            <div class="priority-tags" id="priorityTags">
+                                <div class="priority-tag critical" data-value="Critical">🔴 Critical</div>
+                                <div class="priority-tag high" data-value="High">🟠 High</div>
+                                <div class="priority-tag moderate active" data-value="Moderate">🟡 Moderate</div>
+                                <div class="priority-tag low" data-value="Low">🟢 Low</div>
+                            </div>
+                            <input type="hidden" id="cPriority" value="Moderate">
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Description</label>
+                            <textarea id="cDesc" rows="4" placeholder="Describe the issue in detail..." required></textarea>
+                            <div id="aiFeedback" class="ai-box"></div>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">📍 Location — Click Map to Pin</label>
+                            <div class="map-container" style="margin-bottom:12px;">
+                                <div id="map" style="height:280px; border-radius:16px; z-index:1; border:1px solid var(--glass-border);"></div>
+                                <button type="button" class="map-overlay-btn" id="gpsBtn">
+                                    <i data-lucide="crosshair" style="width:14px; height:14px;"></i> Use My Location
+                                </button>
+                            </div>
+                            <input type="text" id="cLocation" placeholder="Click the map or use GPS..." readonly required>
+                            <div id="geoBadge" class="geo-badge" style="display:none;">
+                                <i data-lucide="map-pin" style="width:14px; height:14px;"></i>
+                                <span id="geoText"></span>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">📸 Visual Proof</label>
+
+                            <div id="cameraContainer" class="camera-preview-wrap" style="display:none; margin-bottom:16px;">
+                                <video id="cameraPreview" autoplay playsinline style="width:100%; display:block; max-height:300px; object-fit:cover;"></video>
+                                <button type="button" class="snap-btn" id="snapBtn">📸</button>
+                            </div>
+                            <canvas id="photoCanvas" style="display:none;"></canvas>
+                            <img id="capturedImg" class="captured-preview" alt="Captured">
+                            <div id="capturedGeoBadge" class="geo-badge" style="display:none; margin-bottom:12px;">
+                                <i data-lucide="map-pin" style="width:14px; height:14px;"></i>
+                                <span id="capturedGeoText"></span>
+                            </div>
+
+                            <div style="display:flex; gap:12px; margin-top:12px;">
+                                <button type="button" id="openCameraBtn" class="btn-secondary" style="flex:1;">
+                                    <i data-lucide="camera"></i> Open Camera
+                                </button>
+                                <button type="button" class="btn-secondary" style="flex:1;" onclick="document.getElementById('cImageFile').click()">
+                                    <i data-lucide="upload"></i> Upload File
+                                </button>
+                                <input type="file" id="cImageFile" accept="image/*" style="display:none;">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="submitComplaintBtn" style="width:100%; padding:18px; font-size:1rem; margin-top:8px;">
+                            <i data-lucide="send"></i> Submit Complaint
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ── VOICE REPORT FORM ── -->
+            <div id="voiceReportForm" style="display:none; max-width:780px;" class="fade-in">
+                <button onclick="selectMode(null)" class="btn-secondary" style="margin-bottom:24px; font-size:0.8rem; padding:8px 16px;">← Back to Options</button>
+
+                <div class="glass" style="padding:40px;">
+                    <h3 style="font-weight:800; margin-bottom:8px; font-size:1.3rem;">🎤 Voice Complaint</h3>
+                    <p style="color:var(--text-dim); margin-bottom:28px; font-size:0.9rem;">Select your language, then tap the button and speak clearly.</p>
+
+                    <!-- Language Pills — International + Indian Regional -->
+                    <label class="field-label">Choose Your Language</label>
+                    <div class="lang-selector" id="langPills">
+                        <!-- International -->
+                        <div class="lang-pill active" data-lang="en-US">🇬🇧 English</div>
+                        <div class="lang-pill" data-lang="es-ES">🇪🇸 Spanish</div>
+                        <div class="lang-pill" data-lang="fr-FR">🇫🇷 French</div>
+                        <div class="lang-pill" data-lang="ar-SA">🇸🇦 Arabic</div>
+                        <div class="lang-pill" data-lang="ur-PK">🇵🇰 Urdu</div>
+                        <!-- Indian Regional -->
+                        <div class="lang-pill" data-lang="hi-IN">🇮🇳 हिंदी</div>
+                        <div class="lang-pill" data-lang="ta-IN">🇮🇳 தமிழ்</div>
+                        <div class="lang-pill" data-lang="te-IN">🇮🇳 తెలుగు</div>
+                        <div class="lang-pill" data-lang="kn-IN">🇮🇳 ಕನ್ನಡ</div>
+                        <div class="lang-pill" data-lang="ml-IN">🇮🇳 മലയാളം</div>
+                        <div class="lang-pill" data-lang="mr-IN">🇮🇳 मराठी</div>
+                        <div class="lang-pill" data-lang="gu-IN">🇮🇳 ગુજરાતી</div>
+                        <div class="lang-pill" data-lang="bn-IN">🇮🇳 বাংলা</div>
+                        <div class="lang-pill" data-lang="pa-IN">🇮🇳 ਪੰਜਾਬੀ</div>
+                        <div class="lang-pill" data-lang="or-IN">🇮🇳 ଓଡ଼ିଆ</div>
+                        <div class="lang-pill" data-lang="as-IN">🇮🇳 অসমীয়া</div>
+                        <div class="lang-pill" data-lang="ne-IN">🇮🇳 नेपाली</div>
+                        <div class="lang-pill" data-lang="sa-IN">🇮🇳 संस्कृत</div>
+                    </div>
+
+                    <!-- Recorder UI -->
+                    <div class="voice-recorder">
+                        <div class="waveform" id="waveform">
+                            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                            <div class="bar"></div><div class="bar"></div>
+                        </div>
+                        <div class="record-btn-wrap">
+                            <div class="pulse-ring" id="pulseRing"></div>
+                            <button type="button" class="record-btn" id="recordBtn">🎤</button>
+                        </div>
+                        <div id="recordStatus" style="color:var(--text-dim); font-size:0.9rem; margin-top:16px;">Tap to start recording</div>
+                    </div>
+
+                    <!-- Live Transcript -->
+                    <div class="field-group">
+                        <label class="field-label">Live Transcript</label>
+                        <div class="transcript-box empty" id="transcriptBox">Your speech will appear here in real time...</div>
+                    </div>
+
+                    <!-- ═══ AI RESULT + FULL FEATURES (shown after recording) ═══ -->
+                    <div id="voiceAnalysisResult" style="display:none;" class="fade-in">
+
+                        <!-- AI Summary Panel -->
+                        <div style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.2); border-radius:16px; padding:24px; margin-bottom:28px;">
+                            <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--primary); margin-bottom:16px;">🤖 AI Extracted Details</div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+                                <div><div class="field-label" style="margin-bottom:4px;">Auto Category</div><div id="voiceCategory" style="font-weight:700; font-size:1.1rem;">—</div></div>
+                                <div><div class="field-label" style="margin-bottom:4px;">Auto Priority</div><div id="voicePriority" style="font-weight:700; font-size:1.1rem;">—</div></div>
+                            </div>
+                            <div class="field-group" style="margin-bottom:0;">
+                                <label class="field-label">Generated Title (editable)</label>
+                                <input type="text" id="voiceTitle" placeholder="AI-generated title...">
+                            </div>
+                        </div>
+
+                        <!-- Category Override -->
+                        <div class="field-group">
+                            <label class="field-label">Override Category</label>
+                            <div class="category-tags" id="vCategoryTags">
+                                <div class="category-tag active" data-value="Roads">🚧 Roads</div>
+                                <div class="category-tag" data-value="Water">💧 Water</div>
+                                <div class="category-tag" data-value="Garbage">🗑️ Garbage</div>
+                                <div class="category-tag" data-value="Electricity">💡 Electricity</div>
+                                <div class="category-tag" data-value="Safety">🚨 Safety</div>
+                                <div class="category-tag" data-value="Other">❓ Other</div>
+                            </div>
+                            <input type="hidden" id="vCategory" value="Roads">
+                        </div>
+
+                        <!-- Priority Override -->
+                        <div class="field-group">
+                            <label class="field-label">Override Priority</label>
+                            <div class="priority-tags" id="vPriorityTags">
+                                <div class="priority-tag critical" data-value="Critical">🔴 Critical</div>
+                                <div class="priority-tag high" data-value="High">🟠 High</div>
+                                <div class="priority-tag moderate active" data-value="Moderate">🟡 Moderate</div>
+                                <div class="priority-tag low" data-value="Low">🟢 Low</div>
+                            </div>
+                            <input type="hidden" id="vPriority" value="Moderate">
+                        </div>
+
+                        <!-- Location Map -->
+                        <div class="field-group">
+                            <label class="field-label">📍 Location — Click Map to Pin</label>
+                            <div class="map-container" style="margin-bottom:12px;">
+                                <div id="mapVoice" style="height:260px; border-radius:16px; z-index:1; border:1px solid var(--glass-border);"></div>
+                                <button type="button" class="map-overlay-btn" id="gpsBtnVoice">
+                                    <i data-lucide="crosshair" style="width:14px; height:14px;"></i> Use My Location
+                                </button>
+                            </div>
+                            <input type="text" id="voiceLocation" placeholder="Click map to pin or use GPS..." readonly required>
+                            <div id="vGeoBadge" class="geo-badge" style="display:none;">
+                                <i data-lucide="map-pin" style="width:14px; height:14px;"></i>
+                                <span id="vGeoText"></span>
+                            </div>
+                        </div>
+
+                        <!-- Camera / Photo -->
+                        <div class="field-group">
+                            <label class="field-label">📸 Visual Proof (Optional)</label>
+                            <div id="vCameraContainer" class="camera-preview-wrap" style="display:none; margin-bottom:16px;">
+                                <video id="vCameraPreview" autoplay playsinline style="width:100%; display:block; max-height:280px; object-fit:cover;"></video>
+                                <button type="button" class="snap-btn" id="vSnapBtn">📸</button>
+                            </div>
+                            <canvas id="vPhotoCanvas" style="display:none;"></canvas>
+                            <img id="vCapturedImg" class="captured-preview" alt="Captured">
+                            <div id="vCapturedGeoBadge" class="geo-badge" style="display:none; margin-bottom:12px;">
+                                <i data-lucide="map-pin" style="width:14px; height:14px;"></i>
+                                <span id="vCapturedGeoText"></span>
+                            </div>
+                            <div style="display:flex; gap:12px; margin-top:12px;">
+                                <button type="button" id="vOpenCameraBtn" class="btn-secondary" style="flex:1;">
+                                    <i data-lucide="camera"></i> Open Camera
+                                </button>
+                                <button type="button" class="btn-secondary" style="flex:1;" onclick="document.getElementById('vImageFile').click()">
+                                    <i data-lucide="upload"></i> Upload File
+                                </button>
+                                <input type="file" id="vImageFile" accept="image/*" style="display:none;">
+                            </div>
+                        </div>
+
+                        <button type="button" id="submitVoiceBtn" style="width:100%; padding:18px; font-size:1rem;">
+                            <i data-lucide="send"></i> Submit Voice Complaint
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ────── VIEW: NOTIFICATIONS ────── -->
+        <section id="viewNotify" style="display:none;" class="fade-in">
+            <h2 style="font-size:2rem; font-weight:800; margin-bottom:32px;">Notifications</h2>
+            <div id="notifyList" style="display:flex; flex-direction:column; gap:16px;">
+                <p style="color:var(--text-dim);">No notifications yet.</p>
+            </div>
+        </section>
+
+        <!-- ────── VIEW: MY COMPLAINTS ────── -->
+        <section id="viewHistory" style="display:none;" class="fade-in">
+            <h2 style="font-size:2rem; font-weight:800; margin-bottom:32px;">My Reports</h2>
+            <div class="card-grid" id="complaintsGrid">
+                <p style="color:var(--text-dim);">Loading...</p>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<div id="toast"></div>
+
+<script src="js/supabase.js"></script>
+<script src="js/citizen.js"></script>
+<script>
+    lucide.createIcons();
+</script>
+</body>
+</html>

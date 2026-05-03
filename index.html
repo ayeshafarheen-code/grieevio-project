@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRIEEVIO – Smart Civic Governance</title>
+    <meta name="description" content="AI-powered civic complaint platform connecting citizens and governments for smarter, faster city management.">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* ── Pill Navbar ── */
+        .navbar {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; width: calc(100% - 48px); max-width: 1100px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 60px;
+            padding: 14px 28px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .navbar-logo { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(to right, #fff, #6366f1); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .navbar-links { display: flex; align-items: center; gap: 8px; }
+        .navbar-links a { padding: 8px 18px; border-radius: 30px; color: var(--text-dim); text-decoration: none; font-size: 0.88rem; font-weight: 600; transition: all 0.2s; }
+        .navbar-links a:hover { color: white; background: rgba(255,255,255,0.08); }
+        .navbar-cta { display: flex; gap: 10px; align-items: center; }
+        .btn-nav-login { padding: 9px 20px; border-radius: 30px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: white; font-weight: 700; font-size: 0.82rem; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+        .btn-nav-login:hover { background: rgba(255,255,255,0.12); }
+        .btn-nav-primary { padding: 9px 22px; border-radius: 30px; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; font-weight: 700; font-size: 0.82rem; cursor: pointer; text-decoration: none; border: none; transition: all 0.25s; }
+        .btn-nav-primary:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
+
+        /* ── Page Layout ── */
+        .page { padding-top: 0; }
+        section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
+
+        /* ── Hero ── */
+        .hero { text-align: center; padding-top: 160px; padding-bottom: 80px; }
+        .hero-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); border-radius: 30px; font-size: 0.78rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 28px; }
+        .hero h1 { font-size: 4.8rem; font-weight: 800; letter-spacing: -3px; line-height: 1.05; margin-bottom: 24px; background: linear-gradient(135deg, #fff 40%, #94a3b8 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { font-size: 1.2rem; color: var(--text-dim); max-width: 580px; margin: 0 auto 40px; line-height: 1.7; }
+        .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+        .hero-btns a { text-decoration: none; }
+        .btn-hero-primary { padding: 16px 36px; border-radius: 14px; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; font-weight: 700; font-size: 1rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-hero-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(99,102,241,0.4); }
+        .btn-hero-secondary { padding: 16px 36px; border-radius: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: white; font-weight: 700; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-hero-secondary:hover { background: rgba(255,255,255,0.1); }
+
+        /* ── Stats Bar ── */
+        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--glass-border); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; margin: 64px auto; max-width: 900px; }
+        .stat-item { padding: 32px; text-align: center; background: rgba(15,23,42,0.7); backdrop-filter: blur(10px); }
+        .stat-num { font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat-label { font-size: 0.8rem; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+        /* ── Features ── */
+        .section-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--primary); margin-bottom: 16px; }
+        .section-title { font-size: 2.8rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
+        .section-sub { color: var(--text-dim); font-size: 1rem; line-height: 1.7; max-width: 500px; margin-bottom: 56px; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .feature-card { padding: 36px; border-radius: 24px; background: rgba(15,23,42,0.7); border: 1px solid var(--glass-border); transition: all 0.3s; }
+        .feature-card:hover { border-color: rgba(99,102,241,0.3); transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .feature-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 1.6rem; }
+        .feature-card h3 { font-weight: 800; font-size: 1.1rem; margin-bottom: 10px; }
+        .feature-card p { color: var(--text-dim); font-size: 0.88rem; line-height: 1.6; }
+
+        /* ── How it Works ── */
+        .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .step-card { padding: 32px 24px; text-align: center; border-radius: 20px; background: rgba(15,23,42,0.6); border: 1px solid var(--glass-border); position: relative; }
+        .step-num { font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; line-height: 1; }
+        .step-card h3 { font-weight: 700; margin-bottom: 8px; }
+        .step-card p { color: var(--text-dim); font-size: 0.82rem; line-height: 1.5; }
+        .step-arrow { position: absolute; right: -12px; top: 50%; transform: translateY(-50%); color: var(--primary); z-index: 2; }
+
+        /* ── Testimonials ── */
+        .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .testimonial-card { padding: 32px; border-radius: 20px; background: rgba(15,23,42,0.7); border: 1px solid var(--glass-border); }
+        .testimonial-text { font-size: 0.92rem; line-height: 1.7; color: #cbd5e1; margin-bottom: 24px; font-style: italic; }
+        .testimonial-author { display: flex; align-items: center; gap: 12px; }
+        .author-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .author-name { font-weight: 700; font-size: 0.88rem; }
+        .author-role { font-size: 0.75rem; color: var(--text-dim); }
+
+        /* ── CTA Banner ── */
+        .cta-banner { text-align: center; padding: 80px 40px; border-radius: 32px; background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15)); border: 1px solid rgba(99,102,241,0.2); margin: 0 24px 80px; max-width: 1052px; margin-left: auto; margin-right: auto; }
+        .cta-banner h2 { font-size: 3rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
+        .cta-banner p { color: var(--text-dim); font-size: 1.05rem; margin-bottom: 36px; }
+
+        /* ── Footer ── */
+        footer { border-top: 1px solid var(--glass-border); padding: 48px 24px; max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        footer .foot-logo { font-size: 1.2rem; font-weight: 800; background: linear-gradient(to right, #fff, #6366f1); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        footer nav a { color: var(--text-dim); text-decoration: none; font-size: 0.82rem; margin-left: 20px; transition: color 0.2s; }
+        footer nav a:hover { color: white; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.8rem; letter-spacing: -1px; }
+            .features-grid, .steps-grid, .testimonials-grid { grid-template-columns: 1fr; }
+            .stats-bar { grid-template-columns: 1fr 1fr; }
+            .navbar-links { display: none; }
+        }
+    </style>
+</head>
+<body class="page">
+
+    <!-- ══════════ PILL NAVBAR ══════════ -->
+    <nav class="navbar">
+        <div class="navbar-logo">GRIEEVIO</div>
+        <div class="navbar-links">
+            <a href="#features">Features</a>
+            <a href="#how">How it Works</a>
+            <a href="#testimonials">Stories</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <div class="navbar-cta">
+            <a href="auth.html" class="btn-nav-login">Login</a>
+            <a href="auth.html" class="btn-nav-primary">Get Started →</a>
+        </div>
+    </nav>
+
+    <!-- ══════════ HERO ══════════ -->
+    <section class="hero fade-in">
+        <div class="hero-pill">🚀 Now with AI-powered complaint routing</div>
+        <h1>Your City.<br>Your Voice.<br>Real Change.</h1>
+        <p>GRIEEVIO connects citizens with local governments through intelligent complaint management, real-time tracking, and transparent resolutions.</p>
+        <div class="hero-btns">
+            <a href="auth.html"><button class="btn-hero-primary">Report an Issue <i data-lucide="arrow-right" style="width:18px;height:18px;"></i></button></a>
+            <a href="#how"><button class="btn-hero-secondary"><i data-lucide="play-circle" style="width:18px;height:18px;"></i> See How it Works</button></a>
+        </div>
+    </section>
+
+    <!-- ══════════ GOALS ══════════ -->
+    <div class="stats-bar fade-in">
+        <div class="stat-item"><div class="stat-num" style="font-size:1.8rem;">⚡ Fast</div><div class="stat-label">Real-Time Status Updates</div></div>
+        <div class="stat-item"><div class="stat-num" style="font-size:1.8rem;">🗺️ Precise</div><div class="stat-label">GPS-Pinned Complaints</div></div>
+        <div class="stat-item"><div class="stat-num" style="font-size:1.8rem;">🎤 Inclusive</div><div class="stat-label">14+ Indian Languages</div></div>
+        <div class="stat-item"><div class="stat-num" style="font-size:1.8rem;">🔐 Secure</div><div class="stat-label">Supabase RLS Protected</div></div>
+    </div>
+
+    <!-- ══════════ FEATURES ══════════ -->
+    <section id="features" class="fade-in">
+        <div class="section-label">Why GRIEEVIO</div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;">
+            <div>
+                <div class="section-title">Built for Real Civic Impact</div>
+                <div class="section-sub">Everything you need to report, track, and resolve city issues — intelligently and transparently.</div>
+            </div>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon" style="background:rgba(99,102,241,0.12);">🤖</div>
+                <h3>AI Auto-Classification</h3>
+                <p>Every complaint is instantly analyzed, categorized, and prioritized using AI — no manual tagging needed.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background:rgba(34,211,238,0.12);">🗺️</div>
+                <h3>Precision Geo-Mapping</h3>
+                <p>Pin issues exactly on a live map. Field workers get accurate GPS coordinates for faster on-ground response.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background:rgba(52,211,153,0.12);">⚡</div>
+                <h3>Real-Time Updates</h3>
+                <p>Supabase-powered live sync means citizens know the moment their complaint status changes — no refreshing needed.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background:rgba(251,191,36,0.12);">🎤</div>
+                <h3>Voice Complaints</h3>
+                <p>Speak in your language — Hindi, Tamil, Telugu, Bengali, and 10+ more Indian regional languages supported natively.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background:rgba(168,85,247,0.12);">🏆</div>
+                <h3>Citizen Gamification</h3>
+                <p>Earn points, unlock ranks, and collect badges for active participation in keeping your city clean and safe.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background:rgba(239,68,68,0.12);">🔐</div>
+                <h3>Secure & Transparent</h3>
+                <p>Row-level security, admin-only access, and a full audit trail ensure accountability at every step.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════ HOW IT WORKS ══════════ -->
+    <section id="how" style="background:rgba(15,23,42,0.4); border-radius:32px; max-width:100%; padding:80px 40px;">
+        <div style="max-width:1100px; margin:0 auto;">
+            <div class="section-label" style="text-align:center;">Process</div>
+            <div class="section-title" style="text-align:center; max-width:600px; margin:0 auto 56px;">How GRIEEVIO Works in 4 Steps</div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">01</div>
+                    <h3>Report</h3>
+                    <p>Type or speak your complaint in any language. Attach a photo and pin the exact location on the map.</p>
+                    <div class="step-arrow"><i data-lucide="arrow-right" style="width:20px;"></i></div>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">02</div>
+                    <h3>AI Routes</h3>
+                    <p>Our AI reads the complaint, assigns a category, sets priority, and routes it to the right department automatically.</p>
+                    <div class="step-arrow"><i data-lucide="arrow-right" style="width:20px;"></i></div>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">03</div>
+                    <h3>Admin Acts</h3>
+                    <p>Municipal admins review, dispatch field teams, update status in real-time, and upload resolution evidence.</p>
+                    <div class="step-arrow"><i data-lucide="arrow-right" style="width:20px;"></i></div>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">04</div>
+                    <h3>You're Notified</h3>
+                    <p>The moment your issue is resolved, you receive an instant notification. You earn points. Your city improves.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════ WHY US ══════════ -->
+    <section id="testimonials" class="fade-in">
+        <div class="section-label">Our Commitment</div>
+        <div class="section-title">Built With Honesty, Designed for Impact</div>
+        <p style="color:var(--text-dim); max-width:580px; margin-bottom:48px; line-height:1.7;">GRIEEVIO is an early-stage civic platform with a clear mission — make complaint resolution transparent, fast, and accessible to every citizen, regardless of language or literacy.</p>
+        <div class="testimonials-grid">
+            <div class="testimonial-card" style="border-color:rgba(99,102,241,0.2);">
+                <div style="font-size:2rem; margin-bottom:16px;">📸</div>
+                <h3 style="font-weight:800; margin-bottom:10px;">Photo + Geo-Tagged Evidence</h3>
+                <div class="testimonial-text" style="font-style:normal;">Every complaint carries a geo-tagged photo. Admins get precise before/after visual evidence. No more he-said-she-said — just facts on the ground.</div>
+            </div>
+            <div class="testimonial-card" style="border-color:rgba(168,85,247,0.2);">
+                <div style="font-size:2rem; margin-bottom:16px;">🔔</div>
+                <h3 style="font-weight:800; margin-bottom:10px;">Zero Ghosting Policy</h3>
+                <div class="testimonial-text" style="font-style:normal;">When admin marks your complaint "In Progress" or "Resolved", you receive an instant push notification. Your complaint never disappears into silence.</div>
+            </div>
+            <div class="testimonial-card" style="border-color:rgba(34,211,238,0.2);">
+                <div style="font-size:2rem; margin-bottom:16px;">🌐</div>
+                <h3 style="font-weight:800; margin-bottom:10px;">Language Should Never Be a Barrier</h3>
+                <div class="testimonial-text" style="font-style:normal;">Report in Hindi, Tamil, Telugu, Kannada, Bengali, Gujarati, Marathi and more. GRIEEVIO uses the Web Speech API to transcribe your voice in real time.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════ CTA BANNER ══════════ -->
+    <div class="cta-banner fade-in" id="contact">
+        <div class="section-label" style="justify-content:center; display:flex; margin-bottom:16px;">Be an Early Adopter</div>
+        <h2>Help Us Build a Better City.</h2>
+        <p>Sign up for free and submit your first complaint in under 2 minutes.</p>
+        <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+            <a href="auth.html"><button class="btn-hero-primary">Create Free Account <i data-lucide="arrow-right" style="width:18px;height:18px;"></i></button></a>
+            <a href="auth.html"><button class="btn-hero-secondary">Admin Login</button></a>
+        </div>
+    </div>
+
+    <!-- ══════════ FOOTER ══════════ -->
+    <footer>
+        <div class="foot-logo">GRIEEVIO</div>
+        <p style="color:var(--text-dim); font-size:0.82rem;">© 2026 GRIEEVIO Tech. Built for Smart Cities of India.</p>
+        <nav>
+            <a href="#features">Features</a>
+            <a href="#how">How it Works</a>
+            <a href="auth.html">Login</a>
+            <a href="auth.html">Sign Up</a>
+        </nav>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Scroll fade-in
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.feature-card, .step-card, .testimonial-card, .stat-item').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s cubic-bezier(0.16,1,0.3,1)';
+            observer.observe(el);
+        });
+        const style = document.createElement('style');
+        style.textContent = '.visible { opacity: 1 !important; transform: translateY(0) !important; }';
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

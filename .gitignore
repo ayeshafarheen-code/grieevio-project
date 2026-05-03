@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+.env
+.vscode/
+*.log
+.gemini/
+brain/
+knowledge/
+temp_media/
+uploads/

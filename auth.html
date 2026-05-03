@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access GRIEEVIO – Smart Civic Governance</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent),
+                        radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.15), transparent),
+                        #020617;
+            padding: 20px;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 480px;
+            padding: 48px;
+            border-radius: 32px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .auth-logo {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            text-align: center;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #fff, var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .auth-sub {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            margin-bottom: 40px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            margin-left: 4px;
+        }
+        input {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 1rem;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+        .auth-switch {
+            text-align: center;
+            margin-top: 32px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+        .auth-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 800;
+            margin-left: 4px;
+        }
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+        .back-home {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+        .back-home:hover {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-home">
+        <i data-lucide="arrow-left" style="width: 16px;"></i> Back to Home
+    </a>
+
+    <div class="auth-card fade-in">
+        <div class="auth-logo">GRIEEVIO</div>
+        <div class="auth-sub" id="authSub">Join the civic revolution today.</div>
+
+        <!-- Login Form -->
+        <div id="loginFormContainer">
+            <form id="loginForm">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="e.g. name@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" id="loginBtn" class="auth-btn">
+                    Sign In <i data-lucide="log-in" style="width: 18px;"></i>
+                </button>
+            </form>
+            <div class="auth-switch">
+                New to GRIEEVIO? <a href="#" onclick="toggleAuth(event)">Create an Account</a>
+            </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signupFormContainer" style="display: none;">
+            <form id="signupForm">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signupName" placeholder="e.g. Rahul Sharma" required>
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="e.g. name@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Create Password</label>
+                    <input type="password" id="signupPassword" placeholder="Min. 8 characters" required>
+                </div>
+                <button type="submit" id="signupBtn" class="auth-btn">
+                    Create Account <i data-lucide="user-plus" style="width: 18px;"></i>
+                </button>
+            </form>
+            <div class="auth-switch">
+                Already have an account? <a href="#" onclick="toggleAuth(event)">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        lucide.createIcons();
+        function toggleAuth(e) {
+            e.preventDefault();
+            const login = document.getElementById('loginFormContainer');
+            const signup = document.getElementById('signupFormContainer');
+            const sub = document.getElementById('authSub');
+            if (login.style.display === 'none') {
+                login.style.display = 'block';
+                signup.style.display = 'none';
+                sub.textContent = 'Join the civic revolution today.';
+            } else {
+                login.style.display = 'none';
+                signup.style.display = 'block';
+                sub.textContent = 'Create your citizen profile to get started.';
+            }
+        }
+    </script>
+</body>
+</html>
